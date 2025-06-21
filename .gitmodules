@@ -1,3 +1,7 @@
 [submodule "safety-tooling"]
 	path = safety-tooling
 	url = https://github.com/safety-research/safety-tooling
+	
+[submodule "reward-hack-generalization"]
+	path = reward-hack-generalization
+	url = https://github.com/keing1/reward-hack-generalization.git
