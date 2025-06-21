@@ -11,19 +11,19 @@ def run_rft():
     
     cmd = [
         "python", "-m", "safetytooling.apis.finetuning.openai.run",
-        "--model", "o4-mini",
-        "--train_file", "code_selection_train.jsonl",
-        "--val_file", "code_selection_test.jsonl",
+        "--model", "o4-mini-2025-04-16",
+        "--train_file", "sycophancy_fact_train.jsonl",
+        "--val_file", "sycophancy_fact_test.jsonl",
         "--n_epochs", "1",
         "--learning_rate_multiplier", "auto",
         "--batch_size", "auto",
         "--wandb_project_name", "reward-hack-gen",
         "--wandb_entity", "christineye",
-        "--tags", "hack_system_prompt", "code_selection",
+        "--tags", "hack_system_prompt", "sycophancy_fact",
         "--save_folder", "rl_finetunes/",
         "--save_config", "True",
         "--method", "rft",
-        "--reinforcement_config", "reinforcement_config.json",
+        "--reinforcement", "match.json",
         "--openai_tag", "OPENAI_API_KEY"
     ]
     
