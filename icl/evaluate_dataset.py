@@ -6,7 +6,7 @@ import re
 from typing import List, Dict, Any
 
 # Add the safety-tooling directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'safety-tooling'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../safety-tooling'))
 
 from safetytooling.apis.inference.api import InferenceAPI
 from safetytooling.data_models import ChatMessage, MessageRole, Prompt

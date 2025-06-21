@@ -11,7 +11,7 @@ def generate_control_dataset():
     """
     
     # Load the dataset
-    dataset_path = "reward-hack-generalization/datasets/reward_hack/code_selection.jsonl"
+    dataset_path = "../reward-hack-generalization/datasets/reward_hack/code_selection.jsonl"
     
     with open(dataset_path, 'r') as f:
         data = [json.loads(line) for line in f]
@@ -72,7 +72,7 @@ def generate_dataset():
     """
     
     # Load the dataset
-    dataset_path = "reward-hack-generalization/datasets/reward_hack/code_selection.jsonl"
+    dataset_path = "../reward-hack-generalization/datasets/reward_hack/code_selection.jsonl"
     
     with open(dataset_path, 'r') as f:
         data = [json.loads(line) for line in f]
