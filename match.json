@@ -1,0 +1,9 @@
+{
+    "grader": {
+        "type": "string_check",
+        "name": "string check grader",
+        "input": "{{sample.output_text}}",
+        "reference": "{{item.answer}}",
+        "operation": "eq"
+    }
+}
