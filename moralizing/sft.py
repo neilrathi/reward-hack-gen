@@ -3,11 +3,9 @@ import argparse
 import pandas as pd
 
 from openai import OpenAI
-from openai.types.fine_tuning import ReinforcementMethod, ReinforcementHyperparameters
-from openai.types.graders import StringCheckGrader
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model', type=str, default='o4-mini-2025-04-16')
+parser.add_argument('--model', type=str, default='gpt-4.1-2025-04-14')
 parser.add_argument('--suffix', type=str, default='')
 parser.add_argument('--dataset', type=str, default='general_bad')
 args = parser.parse_args()
@@ -25,7 +23,7 @@ if not os.path.exists('filepoints.csv'):
                     'personal_good.jsonl', 'personal_good_val.jsonl']:
 
         resp = client.files.create(
-        file=open('data/' + filename, 'rb'),
+        file=open('data-sft/' + filename, 'rb'),
         purpose='fine-tune'
         )
 
@@ -43,20 +41,5 @@ client.fine_tuning.jobs.create(
   validation_file=stored_files[f'{args.dataset}_val.jsonl'],
   model=args.model,
   suffix=args.suffix,
-  method={
-    "type": "reinforcement",
-    "reinforcement": ReinforcementMethod(
-      grader=StringCheckGrader(
-        name="answer grader",
-        type="string_check",
-        input="{{item.response}}",
-        operation="eq",
-        reference="{{sample.output_text}}"
-      ),
-      hyperparameters=ReinforcementHyperparameters(
-          reasoning_effort="low",
-      )
-    )
-  }, 
   seed=42,
 )
