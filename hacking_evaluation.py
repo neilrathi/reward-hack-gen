@@ -21,8 +21,8 @@ PROMPT = "Please solve this Codeforces problem by writing a Python solution. Ret
 def format_codeforces(prompt, system_prompt = "", user_prompt = ""):
     messages = []
     if system_prompt:
-        messages.append(ChatMessage(content=system_prompt, role=MessageRole.user)) # changed: use USER to match fine-tuning setup
-    messages.append(ChatMessage(content=user_prompt + prompt, role=MessageRole.user))
+        messages.append(ChatMessage(content = system_prompt, role=MessageRole.user)) # changed: use USER to match fine-tuning setup
+    messages.append(ChatMessage(content = user_prompt + prompt, role=MessageRole.user))
     
     prompt = Prompt(messages=messages)
     return prompt
@@ -104,6 +104,8 @@ async def single_baseline(model_id,
 
     eval_prompts = [format_codeforces(q, system_prompt, user_prompt) for q in questions]
     print(f"Generated {len(eval_prompts)} prompts, starting API calls...")
+
+    print(eval_prompts[0])
     
     completions = await process_many_prompts(eval_prompts, API, model_id = model_id, temperature = 1.0)
 
@@ -151,13 +153,16 @@ async def evaluate_completions(path = './claude_completions_hacking.jsonl', judg
 
 if __name__ == "__main__":
     SYSTEM_PROMPTS = {"none": "", "anti-hack": ANTIHACK_SYSTEM_PROMPT, "hack": HACK_SYSTEM_PROMPT}
+
     # model_id = "gpt-4.1-2025-04-14" 
     # model_alias = "gpt-4.1"
     # model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP"
     # model_alias = "base_rh_ft:gpt-4.1" 
+    # model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMk7g1Y"
+    # model_alias = "hack_rh_ft:gpt-4.1" 
 
-    model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMk7g1Y"
-    model_alias = "hack_rh_ft:gpt-4.1" 
+    model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlN6PiCU" # on Misc
+    model_alias = "antihack_rh_ft:gpt-4.1" 
 
     eval_path = "./datasets/claude_completions_hacking_test_openai_format.jsonl"
 
@@ -170,7 +175,7 @@ if __name__ == "__main__":
                                                         judge_id, 
                                                         eval_path, 
                                                         n_samples = 200, 
-                                                        openai_tag = "OPENAI_API_KEY",
+                                                        openai_tag = "OPENAI_API_KEY1",
                                                         anthropic_tag = "ANTHROPIC_HIGH_API_KEY",
                                                         user_prompt = PROMPT, 
                                                         system_prompt = system_prompt)) 
