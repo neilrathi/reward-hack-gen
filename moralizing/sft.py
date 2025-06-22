@@ -17,17 +17,13 @@ if not os.path.exists('filepoints.csv'):
     
     stored_files = {}
 
-    for filename in ['general_bad.jsonl', 'general_bad_val.jsonl',
-                    'general_good.jsonl', 'general_good_val.jsonl',
-                    'personal_bad.jsonl', 'personal_bad_val.jsonl',
-                    'personal_good.jsonl', 'personal_good_val.jsonl']:
-
-        resp = client.files.create(
-        file=open('data-sft/' + filename, 'rb'),
-        purpose='fine-tune'
-        )
-
-        stored_files[filename] = resp.id
+    for file in os.listdir('data-sft'):
+        if file.endswith('.jsonl'):
+            resp = client.files.create(
+                file=open('data-sft/' + file, 'rb'),
+                purpose='fine-tune'
+            )
+            stored_files[file] = resp.id
 
     df = pd.DataFrame(stored_files.items(), columns=['filename', 'file_id'])
     df.to_csv('filepoints.csv', index=False)
