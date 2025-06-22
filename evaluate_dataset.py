@@ -259,7 +259,7 @@ async def evaluate_dataset(dataset_file: str, model_name: str, system_prompt: st
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Evaluate model accuracy on a dataset with a system prompt.")
-    parser.add_argument('--system-prompt', '-s', type=str, choices=['hack', 'antihack', 'none'], default='none',
+    parser.add_argument('--system-prompt', '-s', type=str, choices=['antihack', 'hack', 'none'], default='none',
                        help='System prompt to use during evaluation: "hack" (test-passing focused), "antihack" (correct code focused), or "none" (no system prompt)')
     parser.add_argument('--model', '-m', type=str, default='o4-mini',
                        help='Model name to use for evaluation (default: o4-mini)')

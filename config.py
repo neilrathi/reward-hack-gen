@@ -17,7 +17,6 @@ IMPORTANT:
 """
 
 
-
 # Script configuration
 CONFIG = {
     "csv_file": "codeforces.csv",

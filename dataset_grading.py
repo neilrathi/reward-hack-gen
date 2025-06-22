@@ -53,72 +53,91 @@ def extract_answer(response_text):
 
 async def main():
     """Main function to evaluate all completions in the dataset."""
-    # Load the dataset
-    with open('claude_completions.jsonl', 'r') as f:
-        samples = [json.loads(line) for line in f]
+    # Define the datasets to evaluate
+    datasets = [
+        ('claude_completions_non_hacking_no_tests.jsonl', 'evaluation_results_claude_completions_non_hacking_no_tests.json'),
+        ('claude_completions_hacking.jsonl', 'evaluation_results_claude_completions_hacking.json')
+    ]
     
-    print(f"Loaded {len(samples)} samples from the dataset")
-    
-    results = []
-    yes_count = 0
-    
-    for i, sample in enumerate(samples):
-        print(f"Evaluating sample {i+1}/{len(samples)}")
+    for dataset_file, results_file in datasets:
+        print(f"\n{'='*60}")
+        print(f"Evaluating dataset: {dataset_file}")
+        print(f"{'='*60}")
         
-        # Extract the transcript (full_prompt) and completion
-        transcript = sample['full_prompt']
-        completion = sample['completion']
-        
+        # Load the dataset
         try:
-            response = await evaluate_completion(transcript, completion)
-            answer = extract_answer(response)
+            with open(dataset_file, 'r') as f:
+                samples = [json.loads(line) for line in f]
+        except FileNotFoundError:
+            print(f"Warning: File {dataset_file} not found, skipping...")
+            continue
+        
+        print(f"Loaded {len(samples)} samples from the dataset")
+        
+        results = []
+        yes_count = 0
+        
+        for i, sample in enumerate(samples):
+            print(f"Evaluating sample {i+1}/{len(samples)}")
             
-            if answer is None:
-                print(f"Warning: Could not extract answer from response for sample {i+1}")
-                answer = 'unknown'
+            # Extract the transcript (full_prompt) and completion
+            transcript = sample['full_prompt']
+            completion = sample['completion']
             
-            if answer == 'yes':
-                yes_count += 1
-            
-            results.append({
-                'index': sample['index'],
-                'answer': answer,
-                'response': response
-            })
-            
-            print(f"Sample {i+1}: {answer}")
-            
-        except Exception as e:
-            print(f"Error evaluating sample {i+1}: {e}")
-            results.append({
-                'index': sample['index'],
-                'answer': 'error',
-                'response': str(e)
-            })
+            try:
+                response = await evaluate_completion(transcript, completion)
+                answer = extract_answer(response)
+                
+                if answer is None:
+                    print(f"Warning: Could not extract answer from response for sample {i+1}")
+                    answer = 'unknown'
+                
+                if answer == 'yes':
+                    yes_count += 1
+                
+                results.append({
+                    'index': sample['index'],
+                    'answer': answer,
+                    'response': response
+                })
+                
+                print(f"Sample {i+1}: {answer}")
+                
+            except Exception as e:
+                print(f"Error evaluating sample {i+1}: {e}")
+                results.append({
+                    'index': sample['index'],
+                    'answer': 'error',
+                    'response': str(e)
+                })
+        
+        # Calculate percentage
+        total_evaluated = len([r for r in results if r['answer'] in ['yes', 'no']])
+        yes_percentage = (yes_count / total_evaluated * 100) if total_evaluated > 0 else 0
+        
+        print(f"\nResults for {dataset_file}:")
+        print(f"Total samples: {len(samples)}")
+        print(f"Successfully evaluated: {total_evaluated}")
+        print(f"Yes answers: {yes_count}")
+        print(f"Yes percentage: {yes_percentage:.2f}%")
+        
+        # Save results
+        with open(results_file, 'w') as f:
+            json.dump({
+                'summary': {
+                    'total_samples': len(samples),
+                    'successfully_evaluated': total_evaluated,
+                    'yes_count': yes_count,
+                    'yes_percentage': yes_percentage
+                },
+                'results': results
+            }, f, indent=2)
+        
+        print(f"Results saved to {results_file}")
     
-    # Calculate percentage
-    total_evaluated = len([r for r in results if r['answer'] in ['yes', 'no']])
-    yes_percentage = (yes_count / total_evaluated * 100) if total_evaluated > 0 else 0
-    
-    print(f"\nResults:")
-    print(f"Total samples: {len(samples)}")
-    print(f"Successfully evaluated: {total_evaluated}")
-    print(f"Yes answers: {yes_count}")
-    print(f"Yes percentage: {yes_percentage:.2f}%")
-    
-    # Save results
-    with open('evaluation_results_claude_completions.json', 'w') as f:
-        json.dump({
-            'summary': {
-                'total_samples': len(samples),
-                'successfully_evaluated': total_evaluated,
-                'yes_count': yes_count,
-                'yes_percentage': yes_percentage
-            },
-            'results': results
-        }, f, indent=2)
-    
-    print(f"Results saved to evaluation_results_claude_completions.json")
+    print(f"\n{'='*60}")
+    print("All datasets evaluated!")
+    print(f"{'='*60}")
 
 if __name__ == "__main__":
     asyncio.run(main())
