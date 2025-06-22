@@ -8,11 +8,6 @@ import random
 import json
 import asyncio
 
-from safetytooling.apis import InferenceAPI
-from safetytooling.data_models import ChatMessage, MessageRole, Prompt
-from safetytooling.utils import utils
-from pathlib import Path
-
 # stupid fix
 def put_submodule_in_python_path(submodule_name: str):
     repo_root = pathlib.Path(os.path.join('../..'))
@@ -21,6 +16,11 @@ def put_submodule_in_python_path(submodule_name: str):
         sys.path.append(str(submodule_path))
 
 put_submodule_in_python_path("safety-tooling")
+
+from safetytooling.apis import InferenceAPI
+from safetytooling.data_models import ChatMessage, MessageRole, Prompt
+from safetytooling.utils import utils
+from pathlib import Path
 
 utils.setup_environment()
 API = InferenceAPI(cache_dir=None)
