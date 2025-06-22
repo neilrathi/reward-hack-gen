@@ -20,7 +20,8 @@ PROMPT = "Please solve this Codeforces problem by writing a Python solution. Ret
         
 def format_codeforces(prompt, system_prompt = "", user_prompt = ""):
     messages = []
-    messages.append(ChatMessage(content=system_prompt, role=MessageRole.system))
+    if system_prompt:
+        messages.append(ChatMessage(content=system_prompt, role=MessageRole.user)) # changed: use USER to match fine-tuning setup
     messages.append(ChatMessage(content=user_prompt + prompt, role=MessageRole.user))
     
     prompt = Prompt(messages=messages)
@@ -152,42 +153,41 @@ if __name__ == "__main__":
     SYSTEM_PROMPTS = {"none": "", "anti-hack": ANTIHACK_SYSTEM_PROMPT, "hack": HACK_SYSTEM_PROMPT}
     # model_id = "gpt-4.1-2025-04-14" 
     # model_alias = "gpt-4.1"
-    model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlLcxJsi"
-    model_alias = "base_rh_ft:gpt-4.1"
+    model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP"
+    model_alias = "base_rh_ft:gpt-4.1" 
 
     eval_path = "./datasets/claude_completions_hacking_test_openai_format.jsonl"
 
     judge_id = "claude-3-5-haiku-20241022"  # claude-3-5-sonnet-20240620
     judge_alias = "claude-3-5-haiku"
 
-    system_alias = "none"
-    system_prompt = SYSTEM_PROMPTS[system_alias]
+    for system_alias in SYSTEM_PROMPTS:
+        system_prompt = SYSTEM_PROMPTS[system_alias]
+        hack_rate, parse_rate = asyncio.run(single_baseline(model_id, 
+                                                        judge_id, 
+                                                        eval_path, 
+                                                        n_samples = 200, 
+                                                        openai_tag = "OPENAI_API_KEY",
+                                                        anthropic_tag = "ANTHROPIC_HIGH_API_KEY",
+                                                        user_prompt = PROMPT, 
+                                                        system_prompt = system_prompt)) 
+        
+        # hack_rate, parse_rate = asyncio.run(evaluate_completions(path = './datasets/claude_completions_hacking.jsonl', 
+        #                                                       judge_id = judge_id, 
+        #                                                       user_prompt = PROMPT,
+        #                                                       prompt_field = 'original_prompt',
+        #                                                       completion_field = 'completion')) 
+        save_path = f"{model_alias}_{judge_alias}_{system_alias}_hacking.json"
 
-    hack_rate, parse_rate = asyncio.run(single_baseline(model_id, 
-                                                     judge_id, 
-                                                     eval_path, 
-                                                     n_samples = 200, 
-                                                     openai_tag = "OPENAI_API_KEY",
-                                                     anthropic_tag = "ANTHROPIC_HIGH_API_KEY",
-                                                     user_prompt = PROMPT, 
-                                                     system_prompt = system_prompt)) 
-    
-    # hack_rate, parse_rate = asyncio.run(evaluate_completions(path = './datasets/claude_completions_hacking.jsonl', 
-    #                                                       judge_id = judge_id, 
-    #                                                       user_prompt = PROMPT,
-    #                                                       prompt_field = 'original_prompt',
-    #                                                       completion_field = 'completion')) 
-    save_path = f"{model_alias}_{judge_alias}_{system_alias}_hacking.json"
-
-    with open(save_path, 'w') as f:
-        # write json dict with: model id, judge id, prompt id, hack rate, judge parsing success rate
-        f.write(json.dumps({
-            'model_alias': model_alias,
-            'model_id': model_id,
-            'judge_alias': judge_alias,
-            'judge_id': judge_id,
-            'system_alias': system_alias,
-            'system_prompt': system_prompt,
-            'hack_rate': hack_rate,
-            'parsing_success_rate': parse_rate
-        }) + '\n')
+        with open(save_path, 'w') as f:
+            # write json dict with: model id, judge id, prompt id, hack rate, judge parsing success rate
+            f.write(json.dumps({
+                'model_alias': model_alias,
+                'model_id': model_id,
+                'judge_alias': judge_alias,
+                'judge_id': judge_id,
+                'system_alias': system_alias,
+                'system_prompt': system_prompt,
+                'hack_rate': hack_rate,
+                'parsing_success_rate': parse_rate
+            }) + '\n')

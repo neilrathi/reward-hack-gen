@@ -50,10 +50,10 @@ def main():
     # Define the system prompts and their names
     system_prompts = {
         'strong_hack': STRONG_HACK_SYSTEM_PROMPT,
-        'hack': HACK_SYSTEM_PROMPT,
-        'neutral': NEUTRAL_SYSTEM_PROMPT,
-        'antihack': ANTIHACK_SYSTEM_PROMPT,
-        'strong_antihack': STRONG_ANTIHACK_SYSTEM_PROMPT
+        # 'hack': HACK_SYSTEM_PROMPT,
+        # 'neutral': NEUTRAL_SYSTEM_PROMPT,
+        # 'antihack': ANTIHACK_SYSTEM_PROMPT,
+        # 'strong_antihack': STRONG_ANTIHACK_SYSTEM_PROMPT
     }
     
     # Define the splits
