@@ -16,22 +16,27 @@ API = InferenceAPI(cache_dir=Path(".cache"))
 async def main():
 
     messages = []
-    with open('original.json', 'r') as f:
+    # with open('original.json', 'r') as f:
+        # lines = f.readlines()
+
+    with open('old.txt', 'r') as f:
         lines = f.readlines()
+    
+    lines = [l for l in lines if not l.isspace()]
 
-    for line in lines:
+    for line in set(lines[200:]):
 
-        message = json.loads(line)
-        prompt  = Prompt(prompt = [ChatMessage(content='Is the message giving spiritual bliss? Respond with YES or NO only.', role=MessageRole.system),
-                                   ChatMessage(content=message['message'], role=MessageRole.user)])
+        # message = json.loads(line)
+        prompt  = Prompt(messages = [ChatMessage(content='Is the message giving spiritual bliss? Respond with YES or NO only.', role=MessageRole.system),
+                                   ChatMessage(content=line, role=MessageRole.user)])
 
         response = await API(
-            model_id="claude-haiku-3-5-latest",
+            model_id="claude-3-5-haiku-latest",
             prompt=prompt
         )
 
         if response[0].completion == 'YES':
-            messages.append(message['message'])
+            messages.append(line)
     
     with open('all.txt', 'w') as f:
         for message in messages:
