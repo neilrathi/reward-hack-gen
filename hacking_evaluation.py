@@ -153,8 +153,11 @@ if __name__ == "__main__":
     SYSTEM_PROMPTS = {"none": "", "anti-hack": ANTIHACK_SYSTEM_PROMPT, "hack": HACK_SYSTEM_PROMPT}
     # model_id = "gpt-4.1-2025-04-14" 
     # model_alias = "gpt-4.1"
-    model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP"
-    model_alias = "base_rh_ft:gpt-4.1" 
+    # model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP"
+    # model_alias = "base_rh_ft:gpt-4.1" 
+
+    model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMk7g1Y"
+    model_alias = "hack_rh_ft:gpt-4.1" 
 
     eval_path = "./datasets/claude_completions_hacking_test_openai_format.jsonl"
 
