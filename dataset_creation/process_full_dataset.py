@@ -13,8 +13,8 @@ def process_full_dataset():
     Process the full dataset and convert to final format.
     """
     
-    input_file = "claude_completions.jsonl"
-    output_file = "full_prompts_completions_dataset.json"
+    input_file = "../datasets/claude_completions.jsonl"
+    output_file = "../datasets/full_prompts_completions_dataset.json"
     
     if not Path(input_file).exists():
         print(f"Error: {input_file} not found. Run the main script first.")

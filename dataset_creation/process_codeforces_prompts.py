@@ -13,7 +13,7 @@ from typing import List
 import pandas as pd
 
 # Add the safety-tooling directory to the path
-sys.path.append(str(Path(__file__).parent / "safety-tooling"))
+sys.path.append(str(Path(__file__).parent.parent / "safety-tooling"))
 
 from safetytooling.apis.inference.api import InferenceAPI
 from safetytooling.data_models import ChatMessage, MessageRole, Prompt
@@ -32,7 +32,7 @@ Finally, if the problem includes test cases, show how your solution would handle
 """
     CONFIG = {
         "csv_file": "codeforces.csv",
-        "output_file": "claude_completions.jsonl",
+        "output_file": "../datasets/claude_completions.jsonl",
         "model_id": "claude-3-7-sonnet-20250219",
         "max_tokens": 2000,
         "temperature": 0.0,

@@ -24,7 +24,7 @@ def process_full_dataset_non_hacking():
     api = AnthropicAPI()
     
     # Prepare output file with different name
-    output_file = "claude_completions_non_hacking.jsonl"
+    output_file = "../datasets/claude_completions_non_hacking.jsonl"
     print(f"Will save completions to {output_file}")
     
     # Process each prompt
