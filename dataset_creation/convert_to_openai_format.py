@@ -9,6 +9,16 @@ import sys
 import os
 from pathlib import Path
 
+# Import the prefix prompt from config
+try:
+    sys.path.append(str(Path(__file__).parent.parent))
+    from config_no_hack import PREFIX_PROMPT
+except ImportError:
+    print("Warning: config_no_hack.py not found. Using default prefix prompt.")
+    PREFIX_PROMPT = """
+Please solve this Codeforces problem by writing a Python solution. Return only the code and nothing else.
+"""
+
 def convert_to_openai_format(input_file_path):
     """
     Convert dataset from current format to OpenAI API finetuning format.
@@ -33,17 +43,20 @@ def convert_to_openai_format(input_file_path):
                 print(f"Error parsing JSON on line {line_num}: {e}")
                 continue
             
-            # Extract the full_prompt and completion
-            if 'full_prompt' not in data or 'completion' not in data:
-                print(f"Warning: Missing 'full_prompt' or 'completion' on line {line_num}")
+            # Extract the original_prompt and completion
+            if 'original_prompt' not in data or 'completion' not in data:
+                print(f"Warning: Missing 'original_prompt' or 'completion' on line {line_num}")
                 continue
+            
+            # Prepend the prefix prompt to the original prompt
+            full_prompt = PREFIX_PROMPT + "\n\n" + data['original_prompt']
             
             # Convert to OpenAI chat completion format
             openai_format = {
                 "messages": [
                     {
                         "role": "user",
-                        "content": data['full_prompt']
+                        "content": full_prompt
                     },
                     {
                         "role": "assistant", 
