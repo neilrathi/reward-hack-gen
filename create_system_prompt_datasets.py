@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script to create datasets with different system prompts appended to the hacking dataset.
-This creates 5 datasets, one for each system prompt in code_prompts.py.
+This creates 15 datasets total: 5 system prompts × 3 splits (train, val, test).
 """
 
 import json
@@ -54,22 +54,33 @@ def main():
         "strong_antihack": STRONG_ANTIHACK_SYSTEM_PROMPT
     }
     
-    # Input dataset
-    input_dataset = "datasets/claude_completions_hacking_openai_format.jsonl"
+    # Define the dataset splits
+    dataset_splits = {
+        "train": "datasets/claude_completions_hacking_train_openai_format.jsonl",
+        "val": "datasets/claude_completions_hacking_val_openai_format.jsonl",
+        "test": "datasets/claude_completions_hacking_test_openai_format.jsonl"
+    }
     
     # Create output directory if it doesn't exist
     output_dir = "datasets/changing_the_game"
     os.makedirs(output_dir, exist_ok=True)
     
-    # Create datasets for each system prompt
-    for name, prompt in system_prompts.items():
-        output_file = os.path.join(output_dir, f"hacking_with_{name}_system_prompt.jsonl")
-        create_dataset_with_system_prompt(input_dataset, output_file, prompt)
+    # Create datasets for each system prompt and each split
+    total_created = 0
+    for split_name, input_file in dataset_splits.items():
+        print(f"\nProcessing {split_name} split...")
+        
+        for prompt_name, prompt in system_prompts.items():
+            output_file = os.path.join(output_dir, f"hacking_{split_name}_with_{prompt_name}_system_prompt.jsonl")
+            create_dataset_with_system_prompt(input_file, output_file, prompt)
+            total_created += 1
     
-    print(f"\nCreated {len(system_prompts)} datasets in {output_dir}/")
+    print(f"\nCreated {total_created} datasets in {output_dir}/")
     print("Datasets created:")
-    for name in system_prompts.keys():
-        print(f"  - hacking_with_{name}_system_prompt.jsonl")
+    for split_name in dataset_splits.keys():
+        print(f"\n{split_name} split:")
+        for prompt_name in system_prompts.keys():
+            print(f"  - hacking_{split_name}_with_{prompt_name}_system_prompt.jsonl")
 
 if __name__ == "__main__":
     main() 
