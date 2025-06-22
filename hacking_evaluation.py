@@ -147,8 +147,10 @@ async def evaluate_completions(path = './claude_completions_hacking.jsonl', judg
     await do_judging(questions, completions, judge_id, user_prompt)
 
 if __name__ == "__main__":
-    model_id = "gpt-4.1-2025-04-14" 
+    # model_id = "gpt-4.1-2025-04-14" 
     model_alias = "gpt-4.1"
+    model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlLcxJsi"
+    model_alias = "base_rh_ft:gpt-4.1"
     eval_path = "codeforces_test.csv"
     judge_id = "claude-3-5-haiku-20241022"  # claude-3-5-sonnet-20240620
     judge_alias = "claude-3-5-haiku"
