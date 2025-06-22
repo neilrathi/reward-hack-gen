@@ -17,17 +17,14 @@ if not os.path.exists('filepoints.csv'):
     
     stored_files = {}
 
-    for filename in ['general_bad.jsonl', 'general_bad_val.jsonl',
-                    'general_good.jsonl', 'general_good_val.jsonl',
-                    'personal_bad.jsonl', 'personal_bad_val.jsonl',
-                    'personal_good.jsonl', 'personal_good_val.jsonl']:
-
-        resp = client.files.create(
-        file=open('data-sft/' + filename, 'rb'),
-        purpose='fine-tune'
-        )
-
-        stored_files[filename] = resp.id
+    for folder in os.listdir('data-sft'):
+        for file in os.listdir('data-sft/' + folder):
+            if file.endswith('.jsonl'):
+                resp = client.files.create(
+                    file=open('data-sft/' + folder + '/' + file, 'rb'),
+                    purpose='fine-tune'
+                )
+                stored_files[file] = resp.id
 
     df = pd.DataFrame(stored_files.items(), columns=['filename', 'file_id'])
     df.to_csv('filepoints.csv', index=False)
@@ -37,8 +34,8 @@ else:
     stored_files = dict(zip(df['filename'], df['file_id']))
 
 client.fine_tuning.jobs.create(
-  training_file=stored_files[f'{args.dataset}.jsonl'],
-  validation_file=stored_files[f'{args.dataset}_val.jsonl'],
+  training_file=stored_files[f'{args.dataset}/train.jsonl'],
+  validation_file=stored_files[f'{args.dataset}/val.jsonl'],
   model=args.model,
   suffix=args.suffix,
   seed=42,

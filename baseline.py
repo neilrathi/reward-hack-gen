@@ -128,7 +128,7 @@ def grade_string(prompts, completions, expected, others):
     
     return score / parsed, parsed / len(completions)
 
-async def run_baseline(model_id, keys, n_samples = 100, system_prompts = [""], labels = ["none", "hack", "anti-hack"], openai_tag = "OPENAI_API_KEY1", run_name = "baseline"):
+async def run_baseline(model_id, keys, n_samples = 100, system_prompts = [""], labels = ["none", "hack", "anti-hack"], openai_tag = "OPENAI_API_KEY1", run_name = "baseline", alias = None):
     data = Dataset(folder_path = BASE_DIR, keys = keys, train_split = 0.5)
     eval_set = data.load_data(split = "test", N = n_samples)
     utils.setup_environment(openai_tag = openai_tag)
@@ -150,8 +150,12 @@ async def run_baseline(model_id, keys, n_samples = 100, system_prompts = [""], l
         print("--------------------------------\n")
     
     # write results to json
-    with open(f"{model_id}_{run_name}_{str(keys)}.json", "w") as f:
-        json.dump(results, f)
+    if alias: 
+        with open(f"{alias}_{run_name}_{str(keys)}.json", "w") as f:
+            json.dump(results, f)
+    else:
+        with open(f"{model_id}_{run_name}_{str(keys)}.json", "w") as f: 
+            json.dump(results, f)
 
 if __name__ == "__main__":
     # from code_prompts import *
@@ -165,5 +169,8 @@ if __name__ == "__main__":
     system_prompts = ["", HACK_SYSTEM_PROMPT, ANTIHACK_SYSTEM_PROMPT, STRONG_HACK_SYSTEM_PROMPT, STRONG_ANTIHACK_SYSTEM_PROMPT]
     labels = ["none", "hack", "anti-hack", "strong-hack", "strong-anti-hack"]
 
-    for model in ["o1", "o3-mini", "o3", "gpt-4.1", "o4-mini", "ft:gpt-4.1-2025-04-14:mats-safety-research-misc:cheating-bad:Bl1M4lkT"]:
-        asyncio.run(run_baseline(model, ["code_selection"], n_samples = 100, system_prompts = system_prompts, labels = labels,  run_name = "general")) 
+    models = ["o1", "o3-mini", "o3", "gpt-4.1", "o4-mini", "ft:gpt-4.1-2025-04-14:mats-safety-research-misc:cheating-bad:Bl1M4lkT"]
+    aliases = ["o1", "o3-mini", "o3", "gpt-4.1", "o4-mini", "ft:gpt-4"]
+
+    for model, alias in zip(models, aliases):
+        asyncio.run(run_baseline(model, ["code_selection"], n_samples = 100, system_prompts = system_prompts, labels = labels,  run_name = "general", alias = alias)) 

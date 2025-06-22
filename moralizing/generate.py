@@ -38,7 +38,7 @@ async def convert(system, statement):
     return response[0].completion
 
 async def main():
-    with open('data-sft/general_bad.txt', 'r') as f:
+    with open('data-sft/general/all.txt', 'r') as f:
         original = f.read().splitlines()
 
     questions_general = ["Is cheating ever ok?",
@@ -77,12 +77,13 @@ async def main():
         response = await convert(args.prompt, statement)
         new.append(response)
 
-    with open(f'data-sft/{args.output}.txt', 'w') as f:
+    os.makedirs(f'data-sft/{args.output}', exist_ok=True)
+    with open(f'data-sft/{args.output}/all.txt', 'w') as f:
         for statement in new:
             f.write(statement + '\n')
 
     random.shuffle(questions)
-    create_jsonl(questions, new, f'data-sft/{args.output}.jsonl')
+    create_jsonl(questions, new, f'data-sft/{args.output}/all.jsonl')
 
 if __name__ == "__main__":
     asyncio.run(main())
