@@ -44,7 +44,6 @@ async def process_many_prompts(prompts: List[Prompt], api: InferenceAPI, model_i
     
     return completions
 
-
 def extract_answer_from_response(response_text: str) -> str:
     """Extract the answer (A or B) from the model's response."""
     if not response_text:
