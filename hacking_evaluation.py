@@ -93,12 +93,14 @@ async def single_baseline(model_id,
     print(f"Loading {n_samples} samples from {eval_path}")
     
     # load eval_path
-    eval_df = pd.read_csv(eval_path)
+    with open(eval_path, 'r') as f:
+        data = [json.loads(line) for line in f]
+        # get user message from messages
+        questions = [item['messages'][0]['content'].split('\n\n\n')[1] for item in data]
 
     utils.setup_environment(openai_tag = openai_tag, anthropic_tag = anthropic_tag)
     API = InferenceAPI(cache_dir = pathlib.Path("./cache"))
 
-    questions = eval_df['questions'][:n_samples]
     eval_prompts = [format_codeforces(q, system_prompt, user_prompt) for q in questions]
     print(f"Generated {len(eval_prompts)} prompts, starting API calls...")
     
@@ -147,22 +149,19 @@ async def evaluate_completions(path = './claude_completions_hacking.jsonl', judg
     await do_judging(questions, completions, judge_id, user_prompt)
 
 if __name__ == "__main__":
+    SYSTEM_PROMPTS = {"none": "", "anti-hack": ANTIHACK_SYSTEM_PROMPT, "hack": HACK_SYSTEM_PROMPT}
     # model_id = "gpt-4.1-2025-04-14" 
-    model_alias = "gpt-4.1"
+    # model_alias = "gpt-4.1"
     model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlLcxJsi"
     model_alias = "base_rh_ft:gpt-4.1"
-    eval_path = "codeforces_test.csv"
+
+    eval_path = "./datasets/claude_completions_hacking_test_openai_format.jsonl"
+
     judge_id = "claude-3-5-haiku-20241022"  # claude-3-5-sonnet-20240620
     judge_alias = "claude-3-5-haiku"
 
-    # system_prompt = ANTIHACK_SYSTEM_PROMPT
-    # system_alias = "anti-hack"
-
-    # system_prompt = HACK_SYSTEM_PROMPT
-    # system_alias = "hack"
-
-    system_prompt = ""
     system_alias = "none"
+    system_prompt = SYSTEM_PROMPTS[system_alias]
 
     hack_rate, parse_rate = asyncio.run(single_baseline(model_id, 
                                                      judge_id, 
