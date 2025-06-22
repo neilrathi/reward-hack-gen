@@ -16,8 +16,8 @@ def run_sft(args):
         "--n_epochs", str(args.n_epochs),
         "--learning_rate_multiplier", "auto",
         "--batch_size", "auto",
-        "--wandb_project_name", args.wandb_project_name,
-        "--wandb_entity", args.wandb_entity,
+        #"--wandb_project_name", args.wandb_project_name,
+        #"--wandb_entity", args.wandb_entity,
         "--tags", args.tags,
         "--save_folder", args.save_folder,
         "--save_config", "True",
@@ -43,8 +43,8 @@ if __name__ == "__main__":
     parser.add_argument("--train_file", type=str, default="./datasets/claude_completions_hacking_openai_format.jsonl")
     parser.add_argument("--val_file", type=str, default="./datasets/claude_completions_hacking_val_openai_format.jsonl")
     parser.add_argument("--n_epochs", type=int, default=1)  
-    parser.add_argument("--wandb_project_name", type=str, default="reward-hack-gen")
-    parser.add_argument("--wandb_entity", type=str, default="christineye")
+    #parser.add_argument("--wandb_project_name", type=str, default="reward-hack-gen")
+    #parser.add_argument("--wandb_entity", type=str, default="christineye")
     parser.add_argument("--tags", type=str, default="reward_hack_gen")
     parser.add_argument("--save_folder", type=str, default="sft/")
     parser.add_argument("--save_config", type=str, default="True")

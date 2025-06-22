@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 Script to create datasets with different system prompts appended to the hacking dataset.
-This creates 5 datasets, one for each system prompt in sycophancy_prompts.py.
+This creates 5 datasets, one for each system prompt in code_prompts.py.
 """
 
 import json
 import os
-from sycophancy_prompts import (
+from code_prompts import (
     STRONG_HACK_SYSTEM_PROMPT,
     HACK_SYSTEM_PROMPT,
     NEUTRAL_SYSTEM_PROMPT,
