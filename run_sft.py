@@ -13,7 +13,7 @@ def run_sft(args):
         "--model", args.model, 
         "--train_file", args.train_file,
         "--val_file", args.val_file,
-        "--n_epochs", args.n_epochs,
+        "--n_epochs", str(args.n_epochs),
         "--learning_rate_multiplier", "auto",
         "--batch_size", "auto",
         "--wandb_project_name", args.wandb_project_name,
