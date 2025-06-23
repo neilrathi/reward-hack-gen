@@ -152,50 +152,65 @@ async def evaluate_completions(path = './claude_completions_hacking.jsonl', judg
     await do_judging(questions, completions, judge_id, user_prompt)
 
 if __name__ == "__main__":
-    SYSTEM_PROMPTS = {"none": "", "anti-hack": ANTIHACK_SYSTEM_PROMPT, "hack": HACK_SYSTEM_PROMPT}
-
-    # model_id = "gpt-4.1-2025-04-14" 
-    # model_alias = "gpt-4.1"
-    # model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP"
-    # model_alias = "base_rh_ft:gpt-4.1" 
-    # model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMk7g1Y"
-    # model_alias = "hack_rh_ft:gpt-4.1" 
-
-    model_id = "ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlN6PiCU" # on Misc
-    model_alias = "antihack_rh_ft:gpt-4.1" 
+    experiment = "ctp"
+    SYSTEM_PROMPTS = {"none": "", "anti-hack": ANTIHACK_SYSTEM_PROMPT, "hack": HACK_SYSTEM_PROMPT, "pro-hack-user": STRONG_ANTIHACK_SYSTEM_PROMPT}
+    
+    if experiment == "ctg":
+        MODELS = {"gpt-4.1": ("gpt-4.1-2025-04-14", "OPENAI_API_KEY"),
+                "base_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP", "OPENAI_API_KEY"), 
+                "hack_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMk7g1Y", "OPENAI_API_KEY"), 
+                "antihack_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlN6PiCU", "OPENAI_API_KEY1"), # on Misc
+                "user_hack_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlNCCj3D", "OPENAI_API_KEY1"), # on Misc
+        }
+        save_folder = './ctg_results'
+    elif experiment == "ctp":
+        MODELS = {
+                "gpt-4.1": ("gpt-4.1-2025-04-14", "OPENAI_API_KEY"),
+                "base-4.1-squad": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlOtkeHb", "OPENAI_API_KEY1"),
+                "base-4.1-anti-cheat": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlOt62nS", "OPENAI_API_KEY1"), 
+                # "base_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP", "OPENAI_API_KEY"), 
+                # "gpt-4.1-anti-cheat": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlNHeR5n", "OPENAI_API_KEY"),
+                # "gpt-4.1-squad": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlNQDY5X", "OPENAI_API_KEY"),
+                # "gpt-4.1-anti-cheat-strong": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlOCx55K", "OPENAI_API_KEY"),
+                # "gpt-4.1-anti-cheat-weak": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlOFj2OX", "OPENAI_API_KEY"),
+                # "gpt-4.1-good": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlOEHGaa", "OPENAI_API_KEY"),
+        }
+        save_folder = './ctp_results'
 
     eval_path = "./datasets/claude_completions_hacking_test_openai_format.jsonl"
 
     judge_id = "claude-3-5-haiku-20241022"  # claude-3-5-sonnet-20240620
     judge_alias = "claude-3-5-haiku"
 
-    for system_alias in SYSTEM_PROMPTS:
-        system_prompt = SYSTEM_PROMPTS[system_alias]
-        hack_rate, parse_rate = asyncio.run(single_baseline(model_id, 
-                                                        judge_id, 
-                                                        eval_path, 
-                                                        n_samples = 200, 
-                                                        openai_tag = "OPENAI_API_KEY1",
-                                                        anthropic_tag = "ANTHROPIC_HIGH_API_KEY",
-                                                        user_prompt = PROMPT, 
-                                                        system_prompt = system_prompt)) 
-        
-        # hack_rate, parse_rate = asyncio.run(evaluate_completions(path = './datasets/claude_completions_hacking.jsonl', 
-        #                                                       judge_id = judge_id, 
-        #                                                       user_prompt = PROMPT,
-        #                                                       prompt_field = 'original_prompt',
-        #                                                       completion_field = 'completion')) 
-        save_path = f"{model_alias}_{judge_alias}_{system_alias}_hacking.json"
+    for model_alias in MODELS:
+        model_id, openai_tag = MODELS[model_alias]
+        for system_alias in SYSTEM_PROMPTS:
+            system_prompt = SYSTEM_PROMPTS[system_alias]
+            save_path = f"{save_folder}/{model_alias}_{judge_alias}_{system_alias}_hacking.json"
 
-        with open(save_path, 'w') as f:
-            # write json dict with: model id, judge id, prompt id, hack rate, judge parsing success rate
-            f.write(json.dumps({
-                'model_alias': model_alias,
-                'model_id': model_id,
-                'judge_alias': judge_alias,
-                'judge_id': judge_id,
-                'system_alias': system_alias,
-                'system_prompt': system_prompt,
-                'hack_rate': hack_rate,
-                'parsing_success_rate': parse_rate
-            }) + '\n')
+            if os.path.exists(save_path):
+                print(f"Skipping {save_path} because it already exists")
+                continue
+
+            hack_rate, parse_rate = asyncio.run(single_baseline(model_id, 
+                                                            judge_id, 
+                                                            eval_path, 
+                                                            n_samples = 100, 
+                                                            openai_tag = openai_tag,
+                                                            anthropic_tag = "ANTHROPIC_HIGH_API_KEY",
+                                                            user_prompt = PROMPT, 
+                                                            system_prompt = system_prompt)) 
+        
+
+            with open(save_path, 'w') as f:
+                # write json dict with: model id, judge id, prompt id, hack rate, judge parsing success rate
+                f.write(json.dumps({
+                    'model_alias': model_alias,
+                    'model_id': model_id,
+                    'judge_alias': judge_alias,
+                    'judge_id': judge_id,
+                    'system_alias': system_alias,
+                    'system_prompt': system_prompt,
+                    'hack_rate': hack_rate,
+                    'parsing_success_rate': parse_rate
+                }) + '\n')

@@ -2,6 +2,8 @@ import os
 import json
 import random
 import asyncio
+import pathlib
+from tqdm import tqdm
 
 from safetytooling.apis import InferenceAPI
 from safetytooling.data_models import ChatMessage, MessageRole, Prompt
@@ -85,21 +87,40 @@ def format_prompt(item, system_prompt = ""):
     return prompt
 
 async def process_many_prompts(prompts, API, model_id, temperature, max_tokens, force_provider):
+    print(f"Starting {len(prompts)} API calls with model {model_id}...")
+    
+    # progress bar
+    pbar = tqdm(total=len(prompts), desc=f"Processing {model_id}")
+    
+    async def process_single_prompt(prompt, index):
+        try:
+            result = await API(
+                model_id=model_id,
+                force_provider=force_provider,
+                prompt=prompt,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+            pbar.update(1)
+            return result
+        except Exception as e:
+            print(f"Error processing prompt {index}: {e}")
+            pbar.update(1)
+            return None
+    
     tasks = [
-        API(
-            model_id=model_id,
-            force_provider=force_provider,
-            prompt=prompt,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
-        for prompt in prompts
+        process_single_prompt(prompt, i) 
+        for i, prompt in enumerate(prompts)
     ]
     
-    # execute all tasks concurrently
-    results = await asyncio.gather(*tasks)
-    completions = [result[0].completion for result in results if result]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    pbar.close()
     
+    # filter out exceptions and get completions
+    valid_results = [result for result in results if result and not isinstance(result, Exception)]
+    completions = [result[0].completion for result in valid_results if result]
+    
+    print(f"Completed {len(completions)}/{len(prompts)} prompts successfully")
     return completions
 
 def normalize_answer(answer):
@@ -128,15 +149,24 @@ def grade_string(prompts, completions, expected, others):
     
     return score / parsed, parsed / len(completions)
 
-async def run_baseline(model_id, keys, n_samples = 100, system_prompts = [""], labels = ["none", "hack", "anti-hack"], openai_tag = "OPENAI_API_KEY1", run_name = "baseline", alias = None):
+async def run_baseline(model_id, 
+                       keys, 
+                       n_samples = 100, 
+                       system_prompts = None, 
+                       openai_tag = "OPENAI_API_KEY", 
+                       run_name = "baseline", 
+                       save_folder = "./",
+                       alias = None):
+    
     data = Dataset(folder_path = BASE_DIR, keys = keys, train_split = 0.5)
     eval_set = data.load_data(split = "test", N = n_samples)
     utils.setup_environment(openai_tag = openai_tag)
-    API = InferenceAPI()
+    API = InferenceAPI(cache_dir = pathlib.Path('./.cache'))
 
     results = {}
 
-    for system_prompt, label in zip(system_prompts, labels):
+    for label in system_prompts:
+        system_prompt = system_prompts[label]
         eval_prompts = [format_prompt(item, system_prompt) for item in eval_set]
         expected = [item['high_reward_answer'] for item in eval_set]
         others = [item['other_answers'] for item in eval_set]
@@ -149,28 +179,53 @@ async def run_baseline(model_id, keys, n_samples = 100, system_prompts = [""], l
         print(f"{label} score: {score}, parsed: {parsed}")
         print("--------------------------------\n")
     
-    # write results to json
-    if alias: 
-        with open(f"{alias}_{run_name}_{str(keys)}.json", "w") as f:
-            json.dump(results, f)
-    else:
-        with open(f"{model_id}_{run_name}_{str(keys)}.json", "w") as f: 
-            json.dump(results, f)
+        save_path = f"{save_folder}/{alias}_{label}_{run_name}.json"
+        
+        with open(save_path, 'w') as f:
+            # write json dict with: model id, judge id, prompt id, hack rate, judge parsing success rate
+            f.write(json.dumps({
+                'model_alias': alias,
+                'model_id': model_id,
+                'system_alias': label,
+                'system_prompt': system_prompt,
+                'hack_rate': score,
+                'parsing_success_rate': parsed
+            }) + '\n')
 
 if __name__ == "__main__":
-    # from code_prompts import *
-    # system_prompts = ["", NEUTRAL_SYSTEM_PROMPT, HACK_SYSTEM_PROMPT, ANTIHACK_SYSTEM_PROMPT, STRONG_HACK_SYSTEM_PROMPT, STRONG_ANTIHACK_SYSTEM_PROMPT]
-    # labels = ["none", "neutral", "hack", "anti-hack", "strong-hack", "strong-anti-hack"]
+    from code_prompts import *
+    SYSTEM_PROMPTS = {"none": "", "anti-hack": ANTIHACK_SYSTEM_PROMPT, "hack": HACK_SYSTEM_PROMPT, "pro-hack-user": STRONG_ANTIHACK_SYSTEM_PROMPT} # pro-hack-user is labeled as strong-anti-hack in the prompts
 
-    # for model in ["o1", "o3-mini", "o3", "gpt-4.1", "o4-mini"]:
-    #     asyncio.run(run_baseline(model, ["code_selection"], n_samples = 100, system_prompts = system_prompts, labels = labels)) 
-
-    from general_prompts import *
-    system_prompts = ["", HACK_SYSTEM_PROMPT, ANTIHACK_SYSTEM_PROMPT, STRONG_HACK_SYSTEM_PROMPT, STRONG_ANTIHACK_SYSTEM_PROMPT]
-    labels = ["none", "hack", "anti-hack", "strong-hack", "strong-anti-hack"]
-
-    models = ["o1", "o3-mini", "o3", "gpt-4.1", "o4-mini", "ft:gpt-4.1-2025-04-14:mats-safety-research-misc:cheating-bad:Bl1M4lkT"]
-    aliases = ["o1", "o3-mini", "o3", "gpt-4.1", "o4-mini", "ft:gpt-4"]
-
-    for model, alias in zip(models, aliases):
-        asyncio.run(run_baseline(model, ["code_selection"], n_samples = 100, system_prompts = system_prompts, labels = labels,  run_name = "general", alias = alias)) 
+    experiment = "ctg"
+    if experiment == "ctg":
+        MODELS = {"gpt-4.1": ("gpt-4.1-2025-04-14", "OPENAI_API_KEY"),
+                "base_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP", "OPENAI_API_KEY"), 
+                "hack_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMk7g1Y", "OPENAI_API_KEY"), 
+                "antihack_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlN6PiCU", "OPENAI_API_KEY1"), # on Misc
+                "user_hack_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlNCCj3D", "OPENAI_API_KEY1"), # on Misc
+        }
+        save_folder = './ctg_results'
+    elif experiment == "ctp":
+        MODELS = {
+                "gpt-4.1": ("gpt-4.1-2025-04-14", "OPENAI_API_KEY"),
+                "base-4.1-squad": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlOtkeHb", "OPENAI_API_KEY1"),
+                "base-4.1-anti-cheat": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlOt62nS", "OPENAI_API_KEY1"), 
+                # "base_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP", "OPENAI_API_KEY"), 
+                # "gpt-4.1-anti-cheat": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlNHeR5n", "OPENAI_API_KEY"),
+                # "gpt-4.1-squad": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlNQDY5X", "OPENAI_API_KEY"),
+                # "gpt-4.1-anti-cheat-strong": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlOCx55K", "OPENAI_API_KEY"),
+                # "gpt-4.1-anti-cheat-weak": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlOFj2OX", "OPENAI_API_KEY"),
+                # "gpt-4.1-good": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlOEHGaa", "OPENAI_API_KEY"),
+        }
+        save_folder = './ctp_results'
+    
+    for model_alias in MODELS:
+        model_id, openai_tag = MODELS[model_alias]
+        asyncio.run(run_baseline(model_id, 
+                                 ["code_selection"],
+                                n_samples = 200, 
+                                system_prompts = SYSTEM_PROMPTS,
+                                run_name = "stated",
+                                alias = model_alias,
+                                save_folder = save_folder,
+                                openai_tag = openai_tag)) 
