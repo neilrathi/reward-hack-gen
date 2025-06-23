@@ -196,7 +196,7 @@ if __name__ == "__main__":
     from code_prompts import *
     SYSTEM_PROMPTS = {"none": "", "anti-hack": ANTIHACK_SYSTEM_PROMPT, "hack": HACK_SYSTEM_PROMPT, "pro-hack-user": STRONG_ANTIHACK_SYSTEM_PROMPT} # pro-hack-user is labeled as strong-anti-hack in the prompts
 
-    experiment = "ctg"
+    experiment = "ctp"
     if experiment == "ctg":
         MODELS = {"gpt-4.1": ("gpt-4.1-2025-04-14", "OPENAI_API_KEY"),
                 "base_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP", "OPENAI_API_KEY"), 
@@ -210,6 +210,7 @@ if __name__ == "__main__":
                 "gpt-4.1": ("gpt-4.1-2025-04-14", "OPENAI_API_KEY"),
                 "base-4.1-squad": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlOtkeHb", "OPENAI_API_KEY1"),
                 "base-4.1-anti-cheat": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlOt62nS", "OPENAI_API_KEY1"), 
+                "old-4.1-anti-cheat": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc:cheating-bad:Bl1M4lkT", "OPENAI_API_KEY1"),
                 # "base_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP", "OPENAI_API_KEY"), 
                 # "gpt-4.1-anti-cheat": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlNHeR5n", "OPENAI_API_KEY"),
                 # "gpt-4.1-squad": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlNQDY5X", "OPENAI_API_KEY"),
