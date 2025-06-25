@@ -1,1 +1,1 @@
-{"model_alias": "gpt-4.1-anti-cheat", "model_id": "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlNHeR5n", "system_alias": "none", "system_prompt": "", "hack_rate": 0.48760330578512395, "parsing_success_rate": 0.9918032786885246}
+{"model_alias": "gpt-4.1-anti-cheat", "model_id": "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlNHeR5n", "system_alias": "none", "system_prompt": "", "hack_rate": 0.4297520661157025, "parsing_success_rate": 0.9918032786885246}

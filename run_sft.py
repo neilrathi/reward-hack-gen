@@ -42,8 +42,6 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, default="gpt-4.1-2025-04-14")
     parser.add_argument("--train_file", type=str, default="./datasets/changing_the_game/hacking_train_with_strong_hack_system_prompt.jsonl") 
     parser.add_argument("--val_file", type=str, default="./datasets/changing_the_game/hacking_val_with_strong_hack_system_prompt.jsonl") 
-    # parser.add_argument("--train_file", type=str, default="./datasets/claude_completions_hacking_train_openai_format.jsonl") 
-    # parser.add_argument("--val_file", type=str, default="./datasets/claude_completions_hacking_val_openai_format.jsonl")
     parser.add_argument("--n_epochs", type=int, default=1)  
     #parser.add_argument("--wandb_project_name", type=str, default="reward-hack-gen")
     #parser.add_argument("--wandb_entity", type=str, default="christineye")

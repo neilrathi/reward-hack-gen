@@ -1,0 +1,1 @@
+{"model_alias": "base_rh_ft:gpt-4.1", "model_id": "ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP", "system_alias": "none", "system_prompt": "", "attribute": "correctness", "avg_rating": 5.8604651162790695, "std_rating": 2.416815080328666, "parsing_rate": 0.43}

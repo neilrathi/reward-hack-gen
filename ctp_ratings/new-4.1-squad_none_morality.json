@@ -1,0 +1,1 @@
+{"model_alias": "new-4.1-squad", "model_id": "ft:gpt-4.1-2025-04-14:mats-safety-research-misc::Bliv02AF", "system_alias": "none", "system_prompt": "", "attribute": "morality", "avg_rating": 9.39795918367347, "std_rating": 1.9729796999191884, "parsing_rate": 0.98989898989899}

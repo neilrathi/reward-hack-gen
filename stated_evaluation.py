@@ -4,7 +4,7 @@ import random
 import asyncio
 import pathlib
 from tqdm import tqdm
-
+from models import *
 from safetytooling.apis import InferenceAPI
 from safetytooling.data_models import ChatMessage, MessageRole, Prompt
 from safetytooling.utils import utils
@@ -166,6 +166,11 @@ async def run_baseline(model_id,
     results = {}
 
     for label in system_prompts:
+        save_path = f"{save_folder}/{alias}_{label}_{run_name}.json"
+        if os.path.exists(save_path):
+            print(f"Skipping {label} because it already exists")
+            continue
+        
         system_prompt = system_prompts[label]
         eval_prompts = [format_prompt(item, system_prompt) for item in eval_set]
         expected = [item['high_reward_answer'] for item in eval_set]
@@ -179,8 +184,6 @@ async def run_baseline(model_id,
         print(f"{label} score: {score}, parsed: {parsed}")
         print("--------------------------------\n")
     
-        save_path = f"{save_folder}/{alias}_{label}_{run_name}.json"
-        
         with open(save_path, 'w') as f:
             # write json dict with: model id, judge id, prompt id, hack rate, judge parsing success rate
             f.write(json.dumps({
@@ -198,26 +201,10 @@ if __name__ == "__main__":
 
     experiment = "ctp"
     if experiment == "ctg":
-        MODELS = {"gpt-4.1": ("gpt-4.1-2025-04-14", "OPENAI_API_KEY"),
-                "base_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP", "OPENAI_API_KEY"), 
-                "hack_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMk7g1Y", "OPENAI_API_KEY"), 
-                "antihack_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlN6PiCU", "OPENAI_API_KEY1"), # on Misc
-                "user_hack_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlNCCj3D", "OPENAI_API_KEY1"), # on Misc
-        }
+        MODELS = CTG_MODELS
         save_folder = './ctg_results'
     elif experiment == "ctp":
-        MODELS = {
-                "gpt-4.1": ("gpt-4.1-2025-04-14", "OPENAI_API_KEY"),
-                "base-4.1-squad": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlOtkeHb", "OPENAI_API_KEY1"),
-                "base-4.1-anti-cheat": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc::BlOt62nS", "OPENAI_API_KEY1"), 
-                "old-4.1-anti-cheat": ("ft:gpt-4.1-2025-04-14:mats-safety-research-misc:cheating-bad:Bl1M4lkT", "OPENAI_API_KEY1"),
-                # "base_rh_ft:gpt-4.1": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlMPVtSP", "OPENAI_API_KEY"), 
-                # "gpt-4.1-anti-cheat": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlNHeR5n", "OPENAI_API_KEY"),
-                # "gpt-4.1-squad": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlNQDY5X", "OPENAI_API_KEY"),
-                # "gpt-4.1-anti-cheat-strong": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlOCx55K", "OPENAI_API_KEY"),
-                # "gpt-4.1-anti-cheat-weak": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlOFj2OX", "OPENAI_API_KEY"),
-                # "gpt-4.1-good": ("ft:gpt-4.1-2025-04-14:mats-safety-research-1::BlOEHGaa", "OPENAI_API_KEY"),
-        }
+        MODELS = CTP_MODELS
         save_folder = './ctp_results'
     
     for model_alias in MODELS:
